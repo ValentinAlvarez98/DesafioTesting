@@ -48,8 +48,6 @@ export class LoadUserDTO {
 
             const errors = [];
 
-            if (!user) errors.push("El usuario no existe");
-
             const executeValidation = payload.password && user ? true : false;
 
             if (executeValidation) {
@@ -60,14 +58,25 @@ export class LoadUserDTO {
 
             };
 
-            this.email = user.email;
-            this.id = user._id;
-            this.age = user.age;
-            this.first_name = user.first_name;
-            this.last_name = user.last_name;
-            this.phone = user.phone;
-            this.role = user.role.toUpperCase();
-            errors.length > 0 ? this.errors = errors : null;
+            if (user) {
+
+                  if (!validEmail(user.email)) errors.push("Se requiere un email valido");
+
+                  this.email = user.email;
+                  this.id = user._id;
+                  this.age = user.age;
+                  this.first_name = user.first_name;
+                  this.last_name = user.last_name;
+                  this.phone = user.phone;
+                  this.role = user.role ? user.role.toUpperCase() : 'USER';
+                  errors.length > 0 ? this.errors = errors : null;
+
+            } else {
+
+                  errors.push("El usuario no existe");
+                  this.errors = errors;
+
+            };
 
       };
 

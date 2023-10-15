@@ -55,11 +55,12 @@ describe('Pruebas del DAO de productos', () => {
             mockProduct.owner = user._id;
       });
 
-      // Este hook se ejecuta después de cada test
+      // Este hook se ejecuta después de todos los tests
       after(function () {
             mongoose.connection.collections.products.drop();
       });
 
+      // Este hook se ejecuta después de cada test
       afterEach(async function () {
             await mongoose.connection.collections.users.drop();
       })
@@ -76,6 +77,7 @@ describe('Pruebas del DAO de productos', () => {
 
       });
 
+      // Descripción de la prueba
       it('El DAO debe poder devolver un producto por su ID', async function () {
 
             // Given
@@ -93,5 +95,98 @@ describe('Pruebas del DAO de productos', () => {
 
       });
 
+      // Descripción de la prueba
+      it('El DAO debe poder actualizar un producto por su ID', async function () {
+
+            // Given
+            const product = await this.productsDao.saveProduct(mockProduct);
+
+            // When
+            const result = await this.productsDao.updateById(product.id, {
+                  title: 'Producto Test 2',
+                  description: 'Producto de prueba modificado',
+            });
+
+            // Then
+            expect(result).to.exist;
+
+            expect(result).to.have.property('modifiedCount');
+
+            expect(result.modifiedCount).to.equal(1);
+
+      });
+
+      // Descripción de la prueba
+      it('El DAO debe poder devolver todos los productos', async function () {
+
+            // Given
+            const product = await this.productsDao.saveProduct(mockProduct);
+
+            // When
+            const result = await this.productsDao.getAll({
+                  limit: 10,
+            });
+
+            const products = result.payload.products;
+
+            // Then
+            expect(products).to.exist;
+
+            expect(products).to.be.an('array');
+
+            expect(products.length).to.be.greaterThan(0);
+
+      });
+
+      // Descripción de la prueba
+      it('El DAO debe poder devolver todos los productos con paginación', async function () {
+
+            // Given
+            const product = await this.productsDao.saveProduct(mockProduct);
+
+            // When
+            const result = await this.productsDao.getAll({
+                  limit: 10,
+                  page: 1
+            });
+
+            // Then
+            expect(result).to.exist;
+
+            expect(result).to.have.property('page');
+
+            expect(result).to.have.property('totalPages');
+
+            expect(result).to.have.property('hasPrevPage');
+
+            expect(result).to.have.property('hasNextPage');
+
+            expect(result.page).to.equal(1);
+
+      });
+
+      // Descripción de la prueba
+      it('El DAO debe poder devolver todos los productos con búsqueda', async function () {
+
+            // Given
+            const product = await this.productsDao.saveProduct(mockProduct);
+
+            // When
+            const result = await this.productsDao.getAll({
+                  limit: 10,
+                  page: 1,
+                  query: 'Producto Test 2'
+            });
+
+            const products = result.payload.products;
+
+            // Then
+            expect(products).to.exist;
+
+            expect(products).to.be.an('array');
+
+            expect(products[0].description).to.equal('Producto de prueba modificado');
+
+      });
 
 });
