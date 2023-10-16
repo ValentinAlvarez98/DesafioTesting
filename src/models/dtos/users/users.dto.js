@@ -19,12 +19,17 @@ export class GetUserDTO {
 
             const errors = [];
 
+            if (!payload) errors.push("Se requiere un email");
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
+
             for (const key in payload) {
 
                   if (!payload[key]) errors.push(`Se requiere ${key}`);
 
             };
-
 
             if (payload.email !== undefined) {
                   if (!validEmail(payload.email)) errors.push("Se requiere un email valido");
@@ -48,6 +53,12 @@ export class LoadUserDTO {
 
             const errors = [];
 
+            if (!payload || !user) errors.push("El usuario que se intenta cargar, no existe");
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
+
             const executeValidation = payload.password && user ? true : false;
 
             if (executeValidation) {
@@ -58,25 +69,16 @@ export class LoadUserDTO {
 
             };
 
-            if (user) {
+            if (!validEmail(user.email)) errors.push("Se requiere un email valido");
 
-                  if (!validEmail(user.email)) errors.push("Se requiere un email valido");
-
-                  this.email = user.email;
-                  this.id = user._id;
-                  this.age = user.age;
-                  this.first_name = user.first_name;
-                  this.last_name = user.last_name;
-                  this.phone = user.phone;
-                  this.role = user.role ? user.role.toUpperCase() : 'USER';
-                  errors.length > 0 ? this.errors = errors : null;
-
-            } else {
-
-                  errors.push("El usuario no existe");
-                  this.errors = errors;
-
-            };
+            this.email = user.email;
+            this.id = user._id;
+            this.age = user.age;
+            this.first_name = user.first_name;
+            this.last_name = user.last_name;
+            this.phone = user.phone;
+            this.role = user.role ? user.role.toUpperCase() : 'USER';
+            errors.length > 0 ? this.errors = errors : null;
 
       };
 
@@ -125,6 +127,12 @@ export class UpdateUserDTO {
 
             if (updatedPayload.password && updatedPayload.password.length < 8) errors.push("La contraseña debe tener al menos 8 caracteres");
 
+            if (!payloadToUpdate) errors.push("El usuario que se intenta modificar, no existe");
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
+
             const executeValidation = updatedPayload.password && payloadToUpdate ? true : false;
 
             if (executeValidation) {
@@ -137,10 +145,11 @@ export class UpdateUserDTO {
 
             for (const key in updatedPayload) {
 
-                  if (updatedPayload[key] && key !== "password") payloadToUpdate[key] = updatedPayload[key];
+                  if (updatedPayload[key] && key !== "password" && key !== "_id") payloadToUpdate[key] = updatedPayload[key];
 
             };
 
+            this._id = payloadToUpdate._id;
             this.first_name = payloadToUpdate.first_name;
             this.last_name = payloadToUpdate.last_name;
             this.email = payloadToUpdate.email;
@@ -158,13 +167,29 @@ export class UpdateUserDTO {
 
 export class DeleteUserDTO {
 
-      constructor(payload) {
+      constructor(payload, userToDelete) {
 
             const errors = [];
+
+            if (!payload || !userToDelete) errors.push("El usuario que se intenta eliminar, no existe");
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
 
             if (!validEmail(payload.email)) errors.push("Se requiere un email valido");
 
             if (payload.password !== payload.confirm_password) errors.push("Las contraseñas no coinciden");
+
+            const executeValidation = payload.password && userToDelete ? true : false;
+
+            if (executeValidation) {
+
+                  const compare = compareHash(payload.password, userToDelete);
+
+                  if (!compare) errors.push("Contraseña incorrecta");
+
+            };
 
             this.email = payload.email;
             this.password = payload.password;
@@ -179,6 +204,12 @@ export class LoadAdminDTO {
       constructor(payload, admin) {
 
             const errors = [];
+
+            if (!payload || !admin) errors.push("El usuario que se intenta cargar, no existe");
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
 
             for (const key in payload) {
 
@@ -214,6 +245,12 @@ export class CreateResetTokenDTO {
 
             const errors = [];
 
+            if (!payload) errors.push('El usuario que se intenta cargar, no existe')
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
+
             if (!validEmail(payload.email)) errors.push("Se requiere un email valido");
 
             const token = crypto.randomBytes(20).toString('hex');
@@ -244,7 +281,17 @@ export class ResetPasswordDTO {
 
             const errors = [];
 
-            if (!validEmail(user.email)) errors.push("Se requiere un email valido");
+            if (!payload || !user) errors.push('El usuario que se intenta cargar, no existe')
+
+            if (errors.length > 0) return {
+                  errors: this.errors = errors
+            };
+
+            if (!validEmail(payload.email)) errors.push("Se requiere un email valido");
+
+            if (payload.password.length < 8) errors.push("La contraseña debe tener al menos 8 caracteres");
+
+            if (payload.password !== payload.confirm_password) errors.push("Las contraseñas no coinciden");
 
             const executeValidation = payload.password && user.password ? true : false;
 

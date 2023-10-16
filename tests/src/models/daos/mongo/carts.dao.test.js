@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import {
       getDAOS
-} from '../../../../src/models/daos/index.daos.js';
+} from '../../../../../src/models/daos/index.daos.js';
 import Assert from 'assert';
 
 const {

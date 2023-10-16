@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import params from './params.js';
+import path from 'path';
 
 const mode = params.mode;
+
 
 dotenv.config({
       path: `../.env.${mode}`
@@ -30,6 +32,7 @@ const CONFIG = {
             password: process.env.MAIL_PASS
       },
       MAIL_HOST: process.env.MAIL_HOST,
+      UNHASHED_PASSWORD: process.env.UNHASHED_PASSWORD,
 };
 
 export default CONFIG;

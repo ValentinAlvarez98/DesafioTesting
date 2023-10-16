@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "test": "mocha tests/models/dtos/users.dto.test.js"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ValentinAlvarez98/DesafioTesting.git"

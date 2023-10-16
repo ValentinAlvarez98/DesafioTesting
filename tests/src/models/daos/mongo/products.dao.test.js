@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 import {
       getDAOS
-} from '../../../../src/models/daos/index.daos.js';
+} from '../../../../../src/models/daos/index.daos.js';
 import Assert from 'assert';
 import {
       expect
 } from 'chai';
 import {
       createHash
-} from '../../../../src/utils/bcrypt/bcrypt.utils.js';
+} from '../../../../../src/utils/bcrypt/bcrypt.utils.js';
 
 const {
       productsMongoDAO,

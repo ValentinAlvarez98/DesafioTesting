@@ -79,7 +79,9 @@ export class UsersRepository {
 
       async deleteOne(payload) {
 
-            const payloadToDelete = new DeleteUserDTO(payload);
+            const userToDelete = await this.dao.getOne(payload);
+
+            const payloadToDelete = new DeleteUserDTO(payload, userToDelete);
 
             return await this.dao.deleteOne(payloadToDelete, payloadToDelete.email);
 
