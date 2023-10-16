@@ -136,7 +136,6 @@ describe('Pruebas del DAO de usuarios', () => {
                   if (key !== 'password') {
 
                         expect(mockUser[key]).to.be.equal(result[key]);
-                        console.log(mockUser[key], result[key]);
 
                   }
 
