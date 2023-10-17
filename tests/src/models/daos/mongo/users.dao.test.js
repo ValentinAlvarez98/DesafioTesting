@@ -1,15 +1,16 @@
 import mongoose from 'mongoose';
 import {
+      AssertUtilsDAO
+} from '../../../../utils/asserts.utils.js';
+import {
       getDAOS
 } from '../../../../../src/models/daos/index.daos.js';
-import Assert from 'assert';
-import {
-      expect
-} from 'chai';
 import {
       createHash,
-      compareHash
 } from '../../../../../src/utils/bcrypt/bcrypt.utils.js';
+import {
+      mockUsers
+} from '../../../../utils/mocks.utils.js';
 
 const {
       usersMongoDAO,
@@ -24,20 +25,10 @@ function connectToDatabase() {
 // Descripción del grupo de pruebas
 describe('Pruebas del DAO de usuarios', () => {
 
-      // Creación de un usuario de prueba
-      let mockUser = {
-            first_name: 'Usuario Test',
-            last_name: 'Test',
-            email: 'usertest@example.com',
-            age: 25,
-            password: 'testpassword',
-            role: 'USER'
-      };
-
       // Creación de un usuario de prueba con la contraseña hasheada
       let mockHashedPassword = {
-            ...mockUser,
-            password: createHash(mockUser.password)
+            ...mockUsers.mockUser,
+            password: createHash(mockUsers.mockUser.password)
       };
 
       // Este hook se ejecuta antes de todos los tests
@@ -47,7 +38,6 @@ describe('Pruebas del DAO de usuarios', () => {
             this.usersDao = usersMongoDAO;
             this.productsDao = productsMongoDAO;
             this.cartsDao = cartsMongoDAO;
-            this.originalPassword = mockUser.password;
 
       });
 
@@ -57,92 +47,190 @@ describe('Pruebas del DAO de usuarios', () => {
       });
 
       // Este hook se ejecuta después de cada test
-      after(async function () {
-            await mongoose.connection.collections.users.drop();
+      afterEach(async function () {
+            if (await mongoose.connection.collections.users.findOne({
+                        email: mockUsers.mockUser.email
+                  })) {
+                  await mongoose.connection.collections.users.drop();
+            };
       });
 
-      // Descripción de la prueba
-      it('El DAO debe agregar un usuario a la base de datos con su contraseña hasheada correctamente', async function () {
+      // Se describe el grupo de pruebas de getOne y addOne
+      describe(`\n getOne y addOne tests \n`, () => {
 
-            // When
-            const userAdded = await this.usersDao.addOne(mockHashedPassword);
+            // Descripción de la prueba
+            it('Debería producir un DAO inválido para getOne con un email válido, debido a que el email no existe', async function () {
 
-            const result = await this.usersDao.getOne({
-                  email: mockUser.email
+                  // When
+                  const result = await this.usersDao.getOne({
+                        email: mockUsers.mockUser.email
+                  });
+
+                  // Then
+                  AssertUtilsDAO.invalidDAO(result);
+
             });
 
-            const isPasswordCorrect = compareHash(this.originalPassword, result);
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para addOn con un email válido. También debería agregar _id y date_created al usuario', async function () {
 
-            // Then
-            expect(result).to.exist;
+                  // When
+                  const userAdded = await this.usersDao.addOne(mockHashedPassword);
 
-            expect(isPasswordCorrect).to.be.true;
+                  // Then
+                  AssertUtilsDAO.validDAO(userAdded);
 
-            for (const key in mockUser) {
+                  AssertUtilsDAO.validEqualsDAO(userAdded, ['email', 'role', 'password'], [mockUsers.mockUser.email, 'USER', mockHashedPassword.password]);
 
-                  if (key !== 'password') {
+                  AssertUtilsDAO.validTypeDAO(userAdded, ['_id', 'date_created'], ['object', 'date']);
 
-                        expect(mockUser[key]).to.be.equal(result[key]);
+                  mockHashedPassword = {
+                        ...mockHashedPassword,
+                        _id: userAdded._id,
+                        date_created: userAdded.date_created,
+                        role: 'PREMIUM'
+                  };
 
-                  }
-
-            }
-
-            mockHashedPassword = {
-                  ...mockHashedPassword,
-                  _id: userAdded._id
-            };
-
-      });
-
-      // Descripción de la prueba
-      it('El DAO debe devolver un usuario basado en su correo electrónico', async function () {
-
-            // When
-            const result = await this.usersDao.getOne({
-                  email: mockUser.email
             });
 
-            // Then
-            expect(result).to.exist;
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para getOne con un email válido y rol premium, debido a que el email existe', async function () {
 
-            for (const key in mockUser) {
+                  // Given
+                  const user = await this.usersDao.addOne(mockHashedPassword);
 
-                  if (key !== 'password') {
+                  // When
+                  const result = await this.usersDao.getOne({
+                        email: mockUsers.mockUser.email
+                  });
 
-                        expect(mockUser[key]).to.be.equal(result[key]);
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
 
-                  }
+                  AssertUtilsDAO.validEqualsDAO(result, ['email', 'role', 'password'], [mockUsers.mockUser.email, 'PREMIUM', mockHashedPassword.password]);
 
-            }
+                  AssertUtilsDAO.validTypeDAO(result, ['_id', 'date_created'], ['object', 'date']);
+
+            });
+
+            it('Debería producir un DAO válido para getOne con un _id válido, debido a que el _id existe', async function () {
+                  // Given
+                  const userOnlyWithId = {
+                        _id: mockHashedPassword._id
+                  };
+                  const user = await this.usersDao.addOne(mockHashedPassword);
+
+                  // When
+                  const result = await this.usersDao.getOne(userOnlyWithId);
+
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
+
+                  AssertUtilsDAO.validEqualsDAO(result, ['email', 'role', 'password'], [mockUsers.mockUser.email, 'PREMIUM', mockHashedPassword.password]);
+
+            });
 
       });
 
-      it('El DAO debe devolver un usuario basado en su ID', async function () {
+      // Se describe el grupo de pruebas de updateOne
+      describe(`\n updateOne tests \n`, () => {
 
-            // Given
-            const userOnlyWithId = {
-                  _id: mockHashedPassword._id
-            };
+            // Descripción de la prueba
+            it('Debería producir un DAO inválido para updateOne con un email válido, debido a que el email no existe', async function () {
 
-            // When
-            const result = await this.usersDao.getOne(userOnlyWithId);
+                  // When
+                  const result = await this.usersDao.updateOne(mockUsers.mockUser.email, mockUsers.mockUser);
 
-            // Then
-            expect(result).to.exist;
+                  // Then
+                  AssertUtilsDAO.invalidDAO(result);
 
-            for (const key in mockUser) {
+            });
 
-                  if (key !== 'password') {
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para updateOne con un email válido. También debería actualizar los valores de first_name y phone', async function () {
 
-                        expect(mockUser[key]).to.be.equal(result[key]);
+                  // Given
+                  const user = await this.usersDao.addOne(mockHashedPassword);
 
-                  }
+                  // When
+                  const result = await this.usersDao.updateOne(mockUsers.mockUser.email, mockUsers.mockUpdatedUser);
 
-            }
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
 
-            await this.usersDao.deleteOne({
-                  email: mockUser.email
+                  AssertUtilsDAO.validEqualsDAO(result, ['first_name', 'phone'], [mockUsers.mockUpdatedUser.first_name, mockUsers.mockUpdatedUser.phone]);
+
+                  AssertUtilsDAO.validTypeDAO(result, ['_id', 'date_created'], ['object', 'date']);
+
+            });
+
+      });
+
+      // Se describe el grupo de pruebas de deleteOne
+      describe(`\n deleteOne tests \n`, () => {
+
+            // Descripción de la prueba
+            it('Debería producir un DAO inválido para deleteOne con un email válido, debido a que el email no existe', async function () {
+
+                  // When
+                  const result = await this.usersDao.deleteOne({
+                        email: mockUsers.mockUser.email
+                  });
+
+                  // Then
+                  AssertUtilsDAO.invalidDAO(result);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para deleteOne con un email válido. También debería eliminar el usuario', async function () {
+
+                  // Given
+                  const user = await this.usersDao.addOne(mockHashedPassword);
+
+                  // When
+                  const userDeleted = await this.usersDao.deleteOne({
+                        email: mockUsers.mockUser.email
+                  });
+
+                  const result = await this.usersDao.getOne({
+                        email: mockUsers.mockUser.email
+                  });
+
+                  // Then
+                  AssertUtilsDAO.validDAO(userDeleted);
+
+                  AssertUtilsDAO.validEqualsDAO(userDeleted, ['email', 'role', 'password'], [mockUsers.mockUser.email, 'PREMIUM', mockHashedPassword.password]);
+
+                  AssertUtilsDAO.validTypeDAO(userDeleted, ['_id', 'date_created'], ['object', 'date']);
+
+                  AssertUtilsDAO.invalidDAO(result);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para deleteOne con un usuario válido. También debería eliminar el usuario', async function () {
+
+                  // Given
+                  const user = await this.usersDao.addOne(mockHashedPassword);
+
+                  // When
+                  const userDeleted = await this.usersDao.deleteOne(mockUsers.mockRegisterUser);
+
+                  const result = await this.usersDao.getOne({
+                        email: mockUsers.mockUser.email
+                  });
+
+                  // Then
+                  AssertUtilsDAO.validDAO(userDeleted);
+
+                  AssertUtilsDAO.validEqualsDAO(userDeleted, ['email', 'role', 'password'], [mockUsers.mockUser.email, 'PREMIUM', mockHashedPassword.password]);
+
+                  AssertUtilsDAO.validTypeDAO(userDeleted, ['_id', 'date_created'], ['object', 'date']);
+
+                  AssertUtilsDAO.invalidDAO(result);
+
+
             });
 
       });

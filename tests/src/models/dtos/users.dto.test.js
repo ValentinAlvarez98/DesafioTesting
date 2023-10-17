@@ -1,13 +1,12 @@
 import {
-      expect
-} from 'chai';
+      AssertUtilsDTO
+} from '../../../utils/asserts.utils.js';
 import {
       getDTOS
 } from '../../../../src/models/dtos/index.dtos.js';
 import {
-      createHash
-} from '../../../../src/utils/bcrypt/bcrypt.utils.js';
-import CONFIG from '../../../../src/config/environment/config.js';
+      mockUsers
+} from '../../../utils/mocks.utils.js';
 
 const {
       GetUserDTO,
@@ -20,138 +19,8 @@ const {
       ResetPasswordDTO,
 } = getDTOS();
 
-// Se define la clase AssertUtils
-class AssertUtils {
-
-      // Se define la función para validar un DTO
-      static validDTO(dto) {
-
-            expect(dto.errors).to.be.undefined;
-
-      }
-
-      // Se define la función para validar que los valores de ciertas propiedades de un DTO, sean iguales
-      static validEqualsDTO(dto, properties, values) {
-
-            properties.forEach((property, index) => {
-
-                  expect(dto[property]).to.equal(values[index]);
-
-            });
-
-      }
-
-      // Se define la función para validar que los valores de ciertas propiedades de un DTO, no sean iguales
-      static validNotEqualsDTO(dto, properties, values) {
-
-            properties.forEach((property, index) => {
-
-                  expect(dto[property]).to.not.equal(values[index]);
-
-            });
-
-      }
-
-      // Se define la función para validar que los valores de ciertas propiedades de un DTO, sean de cierto tipo
-      static validTypeDTO(dto, properties, types) {
-
-            properties.forEach((property, index) => {
-
-                  expect(dto[property]).to.be.a(types[index]);
-
-            });
-
-      }
-
-      // Se define la función para invalidar un DTO y validar que el mensaje de error sea el esperado
-      static invalidDTO(dto, message) {
-
-            expect(dto.errors).to.not.be.undefined;
-
-            expect(dto.errors[0]).to.equal(message);
-
-      }
-
-}
-
 // Sección de pruebas
 describe('User DTOs Tests', () => {
-
-      // Se definen las variables globales a utilizar en las pruebas
-      const admin = CONFIG.ADMIN;
-
-      // Se define la función para generar un usuario de prueba
-      function generateMockUser(options = {}) {
-
-            // Se define un usuario por defecto
-            const defaultUser = {
-                  first_name: 'Usuario Test',
-                  last_name: 'Test',
-                  email: 'test@gmail.com',
-                  age: 25,
-                  password: 'testpassword',
-            };
-
-            // Se sobreescriben las opciones por defecto con las opciones pasadas como parámetro
-            return {
-                  ...defaultUser,
-                  ...options,
-            };
-      }
-
-      // Se definen los mocks globales
-      const mockUser = generateMockUser();
-
-      const mockRegisterUser = generateMockUser({
-            confirm_password: 'testpassword'
-      });
-
-      const mockPremiumUser = generateMockUser({
-            confirm_password: 'testpassword',
-            role: 'premium'
-      });
-
-      const mockUserPassWrong = generateMockUser({
-            password: 'wrongpassword',
-            confirm_password: 'wrongpassword',
-      });
-
-      const mockUserEmailWrong = generateMockUser({
-            confirm_password: 'testpassword',
-            email: 'test@invalid.com',
-      })
-
-      const mockUserDB = generateMockUser({
-            _id: '6102d63f5f48d51d2c98dc8d',
-            password: createHash('testpassword'),
-            role: 'USER',
-            date_created: Date.now(),
-      });
-
-      const mockUpdatedUser = {
-            ...mockRegisterUser,
-            first_name: 'Usuario Test Actualizado',
-            phone: '1234567890',
-      };
-
-      const mockAdminUser = {
-            first_name: admin.first_name,
-            last_name: admin.last_name,
-            email: admin.email,
-            password: admin.password,
-            role: admin.role,
-      };
-
-      const mockLoginAdminUser = {
-            email: admin.email,
-            password: process.env.UNHASHED_PASSWORD,
-      };
-
-      const mockWrongAdminUser = {
-            email: 'admin@invalid.com',
-            password: 'invalidpassword',
-      };
-
 
       // Se describe el grupo de pruebas de GetUserDTO
       describe(`\n GetUserDTO Tests \n`, () => {
@@ -166,9 +35,9 @@ describe('User DTOs Tests', () => {
                   });
 
                   // Then
-                  AssertUtils.validEqualsDTO(dto, ['email', 'password'], ['test@gmail.com', 'testpassword']);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', 'password'], ['test@gmail.com', 'testpassword']);
 
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
             });
 
@@ -181,7 +50,7 @@ describe('User DTOs Tests', () => {
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -195,15 +64,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadUserDTO({
-                        ...mockUser
+                        ...mockUsers.mockUser
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email', '_id'], [mockUser.email, mockUserDB._id]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', '_id'], [mockUsers.mockUser.email, mockUsers.mockUserDB._id]);
 
             });
 
@@ -212,13 +81,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadUserDTO({
-                        ...mockUserPassWrong
+                        ...mockUsers.mockUserPassWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Contraseña incorrecta')
+                  AssertUtilsDTO.invalidDTO(dto, 'Contraseña incorrecta')
 
             });
 
@@ -227,11 +96,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadUserDTO({
-                        ...mockUser
+                        ...mockUsers.mockUser
                   }, null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
 
             });
 
@@ -240,13 +109,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadUserDTO({
-                        ...mockUserEmailWrong
+                        ...mockUsers.mockUserEmailWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -260,13 +129,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockRegisterUser
+                        ...mockUsers.mockRegisterUser
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email'], [mockRegisterUser.email]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email'], [mockUsers.mockRegisterUser.email]);
 
             });
 
@@ -275,13 +144,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockRegisterUser
+                        ...mockUsers.mockRegisterUser
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validNotEqualsDTO(dto, ['password'], [mockRegisterUser.password]);
+                  AssertUtilsDTO.validNotEqualsDTO(dto, ['password'], [mockUsers.mockRegisterUser.password]);
 
             });
 
@@ -290,13 +159,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockPremiumUser
+                        ...mockUsers.mockPremiumUser
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email', 'role'], [mockPremiumUser.email, 'PREMIUM']);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', 'role'], [mockUsers.mockPremiumUser.email, 'PREMIUM']);
 
             });
 
@@ -305,13 +174,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockUpdatedUser
+                        ...mockUsers.mockUpdatedUser
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email', 'phone'], [mockUpdatedUser.email, mockUpdatedUser.phone]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', 'phone'], [mockUsers.mockUpdatedUser.email, mockUsers.mockUpdatedUser.phone]);
 
             });
 
@@ -321,12 +190,12 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockRegisterUser,
+                        ...mockUsers.mockRegisterUser,
                         password: '123456'
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'La contraseña debe tener al menos 8 caracteres');
+                  AssertUtilsDTO.invalidDTO(dto, 'La contraseña debe tener al menos 8 caracteres');
 
             });
 
@@ -335,11 +204,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockUser
+                        ...mockUsers.mockUser
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Las contraseñas no coinciden');
+                  AssertUtilsDTO.invalidDTO(dto, 'Las contraseñas no coinciden');
 
             });
 
@@ -348,11 +217,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new SaveUserDTO({
-                        ...mockUserEmailWrong
+                        ...mockUsers.mockUserEmailWrong
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -367,15 +236,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockUpdatedUser
+                        ...mockUsers.mockUpdatedUser
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email', 'first_name'], [mockUpdatedUser.email, mockUpdatedUser.first_name]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', 'first_name'], [mockUsers.mockUpdatedUser.email, mockUsers.mockUpdatedUser.first_name]);
 
             });
 
@@ -384,15 +253,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockPremiumUser
+                        ...mockUsers.mockPremiumUser
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email', 'role'], [mockPremiumUser.email, 'PREMIUM']);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email', 'role'], [mockUsers.mockPremiumUser.email, 'PREMIUM']);
 
             });
 
@@ -401,15 +270,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockUpdatedUser
+                        ...mockUsers.mockUpdatedUser
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['_id', 'password'], [mockUserDB._id, mockUserDB.password]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['_id', 'password'], [mockUsers.mockUserDB._id, mockUsers.mockUserDB.password]);
 
             });
 
@@ -418,11 +287,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockUser
+                        ...mockUsers.mockUser
                   }, null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta actualizar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta actualizar, no existe');
 
             });
 
@@ -431,13 +300,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockUserPassWrong
+                        ...mockUsers.mockUserPassWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Contraseña incorrecta');
+                  AssertUtilsDTO.invalidDTO(dto, 'Contraseña incorrecta');
 
             });
 
@@ -446,13 +315,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new UpdateUserDTO({
-                        ...mockUserEmailWrong
+                        ...mockUsers.mockUserEmailWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -466,15 +335,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new DeleteUserDTO({
-                        ...mockRegisterUser
+                        ...mockUsers.mockRegisterUser
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email'], [mockRegisterUser.email]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email'], [mockUsers.mockRegisterUser.email]);
 
             });
 
@@ -483,17 +352,17 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new DeleteUserDTO(null, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   const dto2 = new DeleteUserDTO({
-                        ...mockRegisterUser
+                        ...mockUsers.mockRegisterUser
                   }, null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta eliminar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta eliminar, no existe');
 
-                  AssertUtils.invalidDTO(dto2, 'El usuario que se intenta eliminar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto2, 'El usuario que se intenta eliminar, no existe');
 
             });
 
@@ -502,13 +371,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new DeleteUserDTO({
-                        ...mockUserEmailWrong
+                        ...mockUsers.mockUserEmailWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -517,18 +386,17 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new DeleteUserDTO({
-                        ...mockUserPassWrong
+                        ...mockUsers.mockUserPassWrong
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Contraseña incorrecta');
+                  AssertUtilsDTO.invalidDTO(dto, 'Contraseña incorrecta');
 
             });
 
       });
-
 
       // Se describe el grupo de pruebas de LoadAdminDTO
       describe(`\n LoadAdminDTO Tests \n`, () => {
@@ -538,15 +406,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadAdminDTO({
-                        ...mockLoginAdminUser
+                        ...mockUsers.mockLoginAdminUser
                   }, {
-                        ...mockAdminUser
+                        ...mockUsers.mockAdminUser
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email'], [mockLoginAdminUser.email]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email'], [mockUsers.mockLoginAdminUser.email]);
 
             });
 
@@ -555,11 +423,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadAdminDTO({
-                        ...mockLoginAdminUser
+                        ...mockUsers.mockLoginAdminUser
                   }, null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
 
             });
 
@@ -568,13 +436,13 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new LoadAdminDTO({
-                        ...mockWrongAdminUser
+                        ...mockUsers.mockWrongAdminUser
                   }, {
-                        ...mockAdminUser
+                        ...mockUsers.mockAdminUser
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
 
             });
 
@@ -588,15 +456,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new CreateResetTokenDTO({
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email'], [mockUserDB.email]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email'], [mockUsers.mockUserDB.email]);
 
-                  AssertUtils.validTypeDTO(dto, ['password_reset_token', 'password_reset_expires'], ['string', 'date']);
+                  AssertUtilsDTO.validTypeDTO(dto, ['password_reset_token', 'password_reset_expires'], ['string', 'date']);
 
             });
 
@@ -607,7 +475,7 @@ describe('User DTOs Tests', () => {
                   const dto = new CreateResetTokenDTO(null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
 
             });
 
@@ -622,19 +490,19 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUpdatedUser,
+                        ...mockUsers.mockUpdatedUser,
                         password: 'testpassword2',
                         confirm_password: 'testpassword2'
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.validDTO(dto);
+                  AssertUtilsDTO.validDTO(dto);
 
-                  AssertUtils.validEqualsDTO(dto, ['email'], [mockUpdatedUser.email]);
+                  AssertUtilsDTO.validEqualsDTO(dto, ['email'], [mockUsers.mockUpdatedUser.email]);
 
-                  AssertUtils.validNotEqualsDTO(dto, ['password'], [mockUserDB.password]);
+                  AssertUtilsDTO.validNotEqualsDTO(dto, ['password'], [mockUsers.mockUserDB.password]);
 
             });
 
@@ -643,11 +511,11 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUpdatedUser
+                        ...mockUsers.mockUpdatedUser
                   }, null);
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
+                  AssertUtilsDTO.invalidDTO(dto, 'El usuario que se intenta cargar, no existe');
 
             });
 
@@ -656,15 +524,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUserEmailWrong,
+                        ...mockUsers.mockUserEmailWrong,
                         password: 'testpassword2',
                         confirm_password: 'testpassword2'
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Se requiere un email valido');
+                  AssertUtilsDTO.invalidDTO(dto, 'Se requiere un email valido');
 
             });
 
@@ -673,15 +541,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUserPassWrong,
+                        ...mockUsers.mockUserPassWrong,
                         password: '123456',
                         confirm_password: '123456'
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'La contraseña debe tener al menos 8 caracteres');
+                  AssertUtilsDTO.invalidDTO(dto, 'La contraseña debe tener al menos 8 caracteres');
 
             });
 
@@ -690,14 +558,14 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUserPassWrong,
+                        ...mockUsers.mockUserPassWrong,
                         password: 'testpassword'
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'Las contraseñas no coinciden');
+                  AssertUtilsDTO.invalidDTO(dto, 'Las contraseñas no coinciden');
 
             });
 
@@ -706,15 +574,15 @@ describe('User DTOs Tests', () => {
 
                   // Given
                   const dto = new ResetPasswordDTO({
-                        ...mockUpdatedUser,
+                        ...mockUsers.mockUpdatedUser,
                         password: 'testpassword',
                         confirm_password: 'testpassword'
                   }, {
-                        ...mockUserDB
+                        ...mockUsers.mockUserDB
                   });
 
                   // Then
-                  AssertUtils.invalidDTO(dto, 'La contraseña debe ser diferente a la anterior');
+                  AssertUtilsDTO.invalidDTO(dto, 'La contraseña debe ser diferente a la anterior');
 
             });
 
