@@ -128,6 +128,36 @@ export class CartsController {
 
     };
 
+    static async deleteCart(req, res, next) {
+
+        try {
+            const {
+                code,
+                productId
+            } = req.body;
+
+            const result = await cartsRepository.deleteCart(code, productId);
+
+            res.send(successResponse(result));
+
+        } catch (error) {
+
+            let errorAt = error.stack ? error.stack.split('\n    at ')[1] : '';
+
+            req.logger.error({
+                message: error.message,
+                method: req.method,
+                url: req.originalUrl,
+                date: new Date().toLocaleDateString(),
+                At: errorAt
+            });
+
+        };
+
+    };
+
+    // FALTA IMPLEMENTAR
+
     static async deleteProduct(req, res, next) {
 
         try {
@@ -156,6 +186,7 @@ export class CartsController {
 
     };
 
+    // FALTA IMPLEMENTAR
 
     static async purchaseCart(req, res, next) {
 

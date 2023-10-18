@@ -16,6 +16,7 @@ import {
 import {
       GetCartDTO,
       SaveCartDTO,
+      DeleteCartDTO,
       AddProductDTO,
       DeleteProductFromCartDTO,
       PurchaseCartDTO
@@ -32,6 +33,7 @@ export const getDTOS = () => ({
       ResetPasswordDTO,
       GetCartDTO,
       SaveCartDTO,
+      DeleteCartDTO,
       AddProductDTO,
       DeleteProductFromCartDTO,
       PurchaseCartDTO,

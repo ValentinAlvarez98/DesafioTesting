@@ -1,210 +1,208 @@
 import mongoose from 'mongoose';
 import {
+      AssertUtilsDAO
+} from '../../../../utils/asserts.utils.js';
+import {
       getDAOS
 } from '../../../../../src/models/daos/index.daos.js';
-import Assert from 'assert';
+import {
+      mockCarts,
+      mockUsers,
+      mockProducts
+} from '../../../../utils/mocks.utils.js';
 
 const {
       cartsMongoDAO,
-      usersMongoDAO,
-      productsMongoDAO
+      productsMongoDAO,
+      usersMongoDAO
 } = getDAOS();
 
-mongoose.connect(`mongodb://127.0.0.1:27017/testing?retryWrites=true&w=majority`)
+function connectToDatabase() {
+      return mongoose.connect('mongodb://127.0.0.1:27017/testing?retryWrites=true&w=majority');
+}
 
 // Descripción del grupo de pruebas
-describe('Pruebas del DAO de carritos', () => {
-
-      let mockCart = {
-            code: '123456',
-            products: []
-      }
-
-      let mockUser = {
-            first_name: 'Usuario 1',
-            last_name: 'Test',
-            email: 'usuario1test@gmail.com',
-            age: 25,
-            password: '12345678',
-      }
-
-      let mockProduct = {
-            title: 'Producto 1',
-            description: 'Producto 1 de prueba',
-            code: '123456',
-            price: 100,
-            stock: 10,
-            category: 'Test',
-            id: 1,
-      }
+describe('Cart DAO Tests', () => {
 
       // Este hook se ejecuta antes de todos los tests
-      before(function () {
+      before(async function () {
 
+            await connectToDatabase();
             this.cartsDao = cartsMongoDAO;
-            this.usersDao = usersMongoDAO;
             this.productsDao = productsMongoDAO;
+            this.usersDao = usersMongoDAO;
+
+
 
       });
 
       // Este hook se ejecuta antes de cada test
-      beforeEach(function () {
+      beforeEach(async function () {
 
-            // Establecemos un timeout de 5 segundos para cada test, debido a que estamos trabajando con una base de datos
             this.timeout(5000);
 
-      });
+            const user = await this.usersDao.addOne(mockUsers.mockRegisterUser);
+            mockCarts.mockCart.user = user._id;
 
-      after(function () {
-
-            mongoose.connection.collections.users.drop();
-            mongoose.connection.collections.carts.drop();
-            mongoose.connection.collections.products.drop();
-
-      });
-
-      // Se describe el test
-      it('El DAO debe devolver los carritos en formato de arreglo', async function () {
-
-            // Given
-            console.log(`\n` + "---------------------------")
-            console.log("Dada una instancia de CartsDao:")
-            console.log("---------------------------")
-            console.log(await this.cartsDao);
-            console.log("---------------------------")
-
-            // When
-            console.log("Cuando ejecutamos el método get():")
-            console.log("---------------------------")
-            const carts = await this.cartsDao.getAll();
-            console.log(carts);
-            console.log("---------------------------")
-
-            // Then
-            console.log("Entonces el resultado debe ser un arreglo:")
-            const result = Array.isArray(carts);
-            console.log("---------------------------")
-            console.log(result);
-            console.log("---------------------------")
-            Assert.strictEqual(result, true);
-
-      })
-
-      // Se describe el test
-      it('El DAO debe agregar un carrito correctamente a la base de datos', async function () {
-
-            // Given
-            console.log(`\n` + "---------------------------")
-            console.log("Dada una instancia de CartsDao:")
-            console.log("---------------------------")
-            console.log(await this.cartsDao);
-            console.log("---------------------------")
-            console.log("Y dado un usuario:")
-            console.log("---------------------------")
-
-            const user = await this.usersDao.addOne(mockUser);
-
-            console.log(user);
-
-            mockCart = {
-                  ...mockCart,
-                  user: user._id
-            }
-
-
-            mockUser = user;
-            console.log("---------------------------")
-
-
-            // When
-            console.log("Cuando ejecutamos el método saveOne():")
-            console.log("---------------------------")
-            const cart = await this.cartsDao.saveOne(mockCart);
-            console.log(cart);
-            console.log("---------------------------")
-
-            // Then
-            console.log("Entonces el resultado debe ser un objeto:")
-            const result = typeof cart === 'object';
-            console.log("---------------------------")
-            console.log(result);
-            console.log("---------------------------")
-            Assert.strictEqual(result, true);
-
-      })
-
-      // Se describe el test
-      it('El DAO debe devolver un carrito en formato de objeto', async function () {
-
-            // Given
-            console.log(`\n` + "---------------------------")
-            console.log("Dada una instancia de CartsDao:")
-            console.log("---------------------------")
-            console.log(await this.cartsDao);
-            console.log("---------------------------")
-
-            // When
-            console.log("Cuando ejecutamos el método getOne():")
-            console.log("---------------------------")
-            const cart = await this.cartsDao.getOne(mockCart);
-            console.log(cart);
-            console.log("---------------------------")
-
-            // Then
-            console.log("Entonces el resultado debe ser un objeto:")
-            const result = typeof cart === 'object';
-            console.log("---------------------------")
-            console.log(result);
-            console.log("---------------------------")
-            Assert.strictEqual(result, true);
-
-      })
-
-      // Se describe el test
-      it('El DAO debe agregar un producto al carrito correctamente', async function () {
-
-            // Given
-            console.log(`\n` + "---------------------------")
-            console.log("Dada una instancia de CartsDao:")
-            console.log("---------------------------")
-            console.log(await this.cartsDao);
-            console.log("---------------------------")
-            console.log("Dado un producto:")
-            console.log("---------------------------")
-            mockProduct = {
-                  ...mockProduct,
-                  owner: mockUser._id
-            }
-            const product = await this.productsDao.saveProduct(mockProduct);
-            const productToAdd = {
+            const product = await this.productsDao.saveProduct(mockProducts.mockProduct);
+            mockCarts.mockCart.products[0] = {
                   product: product._id,
                   quantity: 1,
-                  price: product.price
-            }
-            console.log(productToAdd);
-            console.log("---------------------------")
-            console.log("Y dado un carrito actualizado con el producto:")
-            console.log("---------------------------")
-            mockCart = {
-                  ...mockCart,
-                  products: [productToAdd]
+                  price: product.price,
             }
 
-            // When
-            console.log("Cuando ejecutamos el método addProduct():")
-            console.log("---------------------------")
-            const cart = await this.cartsDao.addProduct(mockCart.code, mockCart);
-            console.log(cart);
-            console.log("---------------------------")
+      });
 
-            // Then
-            console.log("Entonces el resultado debe incluir un objeto dentro del array 'products':")
-            const result = cart.products.length > 0;
-            console.log("---------------------------")
-            console.log(result);
-            console.log("---------------------------")
-            Assert.strictEqual(result, true);
+      // Este hook se ejecuta después de todos los tests
+      after(async function () {
 
-      })
+            await mongoose.connection.close();
+      });
 
-})
+      // Este hook se ejecuta después de cada test
+      afterEach(async function () {
+
+            if (await mongoose.connection.collections.users.findOne({
+                        email: mockUsers.mockUser.email
+                  })) {
+                  await mongoose.connection.collections.users.drop();
+            };
+
+            if (await mongoose.connection.collections.products.findOne({
+                        id: mockProducts.mockProduct.id
+                  })) {
+                  await mongoose.connection.collections.products.drop();
+            };
+
+            if (await mongoose.connection.collections.carts.findOne({
+                        code: mockCarts.mockCart.code
+                  })) {
+                  await mongoose.connection.collections.carts.drop();
+            };
+
+      });
+
+      // Se describe el grupo de pruebas de getAll, getOne y saveOne
+      describe(`\n getAll, getOne y saveOne tests \n`, () => {
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para getAll con un array vacío', async function () {
+
+                  // When
+                  const result = await this.cartsDao.getAll();
+
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
+
+                  AssertUtilsDAO.validEqualsDAO(result, ['length'], [0]);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO inválido para getOne con un código válido, debido a que el código no existe', async function () {
+
+                  // When
+                  const result = await this.cartsDao.getOne({
+                        code: mockCarts.mockCart.code
+                  });
+
+                  // Then
+                  AssertUtilsDAO.invalidDAO(result);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para saveOne con un carrito válido con un usuario válido. También debería agregar _id y date_created al carrito', async function () {
+
+                  // When
+                  const cartAdded = await this.cartsDao.saveOne(mockCarts.mockCart);
+
+                  // Then
+                  AssertUtilsDAO.validDAO(cartAdded);
+
+                  AssertUtilsDAO.validEqualsDAO(cartAdded, ['code', 'user'], [mockCarts.mockCart.code, mockCarts.mockCart.user]);
+
+                  AssertUtilsDAO.validTypeDAO(cartAdded, ['_id', 'date_created'], ['object', 'date']);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para getAll con un array con un carrito completo', async function () {
+
+                  // Given
+                  await this.cartsDao.saveOne(mockCarts.mockCart);
+
+                  // When
+                  const result = await this.cartsDao.getAll();
+
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para getOne con un código válido, debido a que el código existe', async function () {
+
+                  // Given
+                  await this.cartsDao.saveOne(mockCarts.mockCart);
+
+                  // When
+                  const result = await this.cartsDao.getOne({
+                        code: mockCarts.mockCart.code
+                  });
+
+                  // Then
+                  AssertUtilsDAO.validDAO(result);
+
+                  AssertUtilsDAO.validEqualsDAO(result, ['code'], [mockCarts.mockCart.code]);
+
+                  AssertUtilsDAO.validTypeDAO(result, ['_id', 'date_created'], ['object', 'date']);
+
+            });
+
+      });
+
+      // Se describe el grupo de pruebas de addProduct y deleteProduct
+      describe(`\n addProduct y deleteCart tests \n`, () => {
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para addProduct con un código válido y un producto válido. También debería agregar _id y date_created al carrito', async function () {
+
+                  // Given
+                  await this.cartsDao.saveOne(mockCarts.mockCart);
+
+                  // When
+                  const cartAdded = await this.cartsDao.addProduct(mockCarts.mockCart.code, mockCarts.mockCart.products[0]);
+
+                  // Then
+                  AssertUtilsDAO.validDAO(cartAdded);
+
+                  AssertUtilsDAO.validEqualsDAO(cartAdded, ['code'], [mockCarts.mockCart.code]);
+
+                  AssertUtilsDAO.validTypeDAO(cartAdded, ['_id', 'date_created'], ['object', 'date']);
+
+            });
+
+            // Descripción de la prueba
+            it('Debería producir un DAO válido para deleteCart con un código válido.', async function () {
+
+                  // Given
+                  await this.cartsDao.saveOne(mockCarts.mockCart);
+
+                  // When
+                  const cartAdded = await this.cartsDao.deleteCart(mockCarts.mockCart);
+
+                  const result = await this.cartsDao.getOne({
+                        code: mockCarts.mockCart.code
+                  });
+
+                  // Then
+                  AssertUtilsDAO.validDAO(cartAdded);
+
+                  AssertUtilsDAO.invalidDAO(result);
+
+            });
+
+      });
+
+});

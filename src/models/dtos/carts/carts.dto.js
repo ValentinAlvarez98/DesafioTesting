@@ -55,6 +55,26 @@ export class SaveCartDTO {
 
 }
 
+export class DeleteCartDTO {
+
+    constructor(code, productId) {
+        this.code = code;
+    }
+
+    async prepareData() {
+
+        const cart = await cartsModel.findOne({
+
+            code: this.code
+
+        });
+
+        return cart;
+
+    };
+
+};
+
 export class AddProductDTO {
 
     constructor(code, productId, quantity, user) {
@@ -139,6 +159,8 @@ export class AddProductDTO {
 
 };
 
+// FALTA IMPLEMENTAR
+
 export class DeleteProductFromCartDTO {
 
     constructor(code, productId) {
@@ -167,6 +189,9 @@ export class DeleteProductFromCartDTO {
     };
 
 };
+
+// FALTA IMPLEMENTAR
+
 
 export class PurchaseCartDTO {
 

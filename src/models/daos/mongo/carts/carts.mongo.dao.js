@@ -35,6 +35,14 @@ export class CartsMongoDAO {
 
     };
 
+    async deleteCart(cart) {
+
+        return await cartsModel.findOneAndDelete({
+            code: cart.code
+        });
+
+    }
+
     async addProduct(code, payload) {
 
         const cart = await cartsModel.findOneAndUpdate({
@@ -47,6 +55,8 @@ export class CartsMongoDAO {
 
     }
 
+    // FALTA IMPLEMENTAR
+
     async deleteProduct(payload) {
 
         return await cartsModel.findOneAndDelete({
@@ -54,5 +64,7 @@ export class CartsMongoDAO {
         });
 
     };
+
+    // FALTA IMPLEMENTAR
 
 };

@@ -102,9 +102,58 @@ export class AssertUtilsDAO {
       // Se define la función para invalidar un DAO.
       static invalidDAO(dao) {
 
-            expect(dao).to.be.null;
+            expect(dao).to.be.null
 
       };
 
 
 };
+
+// Se define la clase AssertUtilsRepository
+export class AssertUtilsRepository {
+
+      // Se define la función para validar si el usuario recibido es el esperado
+      static validUser(user, expectedUser = {}, properties = []) {
+
+            properties.forEach(property => {
+
+                  expect(user[property]).to.equal(expectedUser[property]);
+
+            });
+
+      };
+
+      // Se define la función para validar un Repository y su contraseña encriptada
+      static validRepository(user, hashedPassword, originalPassword) {
+
+            expect(user).to.exist;
+
+            expect(user).to.have.property('_id');
+
+            expect(user).to.have.property('email');
+
+            expect(user).to.have.property('password');
+
+            expect(user.password).to.equal(hashedPassword);
+
+            expect(user.password).to.not.equal(originalPassword);
+
+      };
+
+      // Se define la función para validar si un DAO es inválido
+      static invalidRepository(user) {
+
+            expect(user).to.be.null;
+
+      };
+
+      static handleDTOError(error, expectedErrorMessage) {
+
+            expect(error).to.have.property('message');
+
+            for (let i = 0; i < expectedErrorMessage.length; i++) {
+                  expect(error.message).to.include(expectedErrorMessage[i]);
+            }
+
+      };
+}

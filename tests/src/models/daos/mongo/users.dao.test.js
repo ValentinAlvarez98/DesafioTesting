@@ -14,8 +14,6 @@ import {
 
 const {
       usersMongoDAO,
-      productsMongoDAO,
-      cartsMongoDAO
 } = getDAOS();
 
 function connectToDatabase() {
@@ -23,7 +21,7 @@ function connectToDatabase() {
 }
 
 // Descripción del grupo de pruebas
-describe('Pruebas del DAO de usuarios', () => {
+describe('User DAO Tests', () => {
 
       // Creación de un usuario de prueba con la contraseña hasheada
       let mockHashedPassword = {
@@ -36,14 +34,17 @@ describe('Pruebas del DAO de usuarios', () => {
 
             await connectToDatabase();
             this.usersDao = usersMongoDAO;
-            this.productsDao = productsMongoDAO;
-            this.cartsDao = cartsMongoDAO;
 
       });
 
       // Este hook se ejecuta antes de cada test
       beforeEach(function () {
             this.timeout(5000);
+      });
+
+      // Este hook se ejecuta después de todos los tests
+      after(async function () {
+            await mongoose.connection.close();
       });
 
       // Este hook se ejecuta después de cada test

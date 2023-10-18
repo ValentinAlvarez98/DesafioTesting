@@ -8,6 +8,7 @@ import {
 const {
     GetCartDTO,
     SaveCartDTO,
+    DeleteCartDTO,
     AddProductDTO,
     UpdateProductQuantityDTO,
     DeleteProductFromCartDTO,
@@ -66,6 +67,16 @@ export class CartsRepository {
 
     };
 
+    async deleteCart(payload) {
+
+        const payloadToDelete = new DeleteCartDTO(payload);
+
+        return await this.dao.deleteCart(payloadToDelete);
+
+    }
+
+    // FALTA IMPLEMENTAR
+
     async deleteProduct(payload) {
 
         const payloadToDelete = new DeleteProductFromCartDTO(payload);
@@ -73,6 +84,8 @@ export class CartsRepository {
         return await this.dao.deleteProduct(payloadToDelete);
 
     };
+
+    // FALTA IMPLEMENTAR
 
     async purchaseCart(code) {
 

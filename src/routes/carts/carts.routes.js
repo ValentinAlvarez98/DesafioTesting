@@ -16,6 +16,6 @@ cartsRouter.get('/:code', CartsController.getOne);
 cartsRouter.post('/', CartsController.saveOne);
 cartsRouter.post('/:code/purchase', userMiddleware, CartsController.purchaseCart);
 cartsRouter.put('/', userMiddleware, CartsController.addProduct);
-cartsRouter.delete('/products', CartsController.deleteProduct);
+cartsRouter.delete('/', CartsController.deleteCart);
 
 export default cartsRouter;

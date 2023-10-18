@@ -59,7 +59,9 @@ export class UsersRepository {
 
             if (userPayload.errors) throw new Error(JSON.stringify(userPayload.errors));
 
-            return await this.dao.addOne(userPayload);
+            const user = await this.dao.addOne(userPayload);
+
+            return user;
 
       };
 
